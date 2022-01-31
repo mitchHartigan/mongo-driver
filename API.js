@@ -1,5 +1,6 @@
 const mongodb = require("mongodb");
 const fs = require("fs");
+const command = require("nodemon/lib/config/command");
 
 const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
   const fileCollection = client
@@ -45,4 +46,49 @@ const UPLOAD = async (
   });
 };
 
-module.exports = { CLEAR_GRIDFS_BUCKET, UPLOAD };
+const FETCH_MARKDOWN_NAMES = (client, environment) => {
+  return new Promise((resolve, reject) => {
+    const collection = client
+      .db(`mortgagebanking-${environment}`)
+      .collection("articles-markdown.files");
+
+    collection.find({}).toArray((err, markdownFiles) => {
+      if (err) console.log(err);
+      let names = [];
+
+      for (file of markdownFiles) {
+        names.push(file.filename);
+      }
+
+      console.log("names \n" + names);
+      resolve(names);
+    });
+  });
+};
+
+const DOWNLOAD = async (client, filename, environment) => {
+  return new Promise((resolve, reject) => {
+    const db = client.db(`mortgagebanking-${environment}`);
+
+    const bucket = new mongodb.GridFSBucket(db, {
+      chunkSizeBytes: 1024,
+      bucketName: "articles-markdown",
+    });
+
+    bucket
+      .openDownloadStreamByName(filename)
+      .pipe(fs.createWriteStream(`./markdown/${filename}`))
+      .on("error", (err) => console.log(err))
+      .on("finish", () => {
+        console.log(`Finished download for ${filename}`);
+        resolve();
+      });
+  });
+};
+
+module.exports = {
+  CLEAR_GRIDFS_BUCKET,
+  UPLOAD,
+  DOWNLOAD,
+  FETCH_MARKDOWN_NAMES,
+};

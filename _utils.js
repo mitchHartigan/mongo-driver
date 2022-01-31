@@ -1,5 +1,10 @@
 const fs = require("fs");
-const { UPLOAD, CLEAR_GRIDFS_BUCKET } = require("./API");
+const {
+  UPLOAD,
+  DOWNLOAD,
+  CLEAR_GRIDFS_BUCKET,
+  FETCH_MARKDOWN_NAMES,
+} = require("./API");
 
 const getNamesFromMarkdownFolder = () => {
   return fs.readdirSync("./markdown");
@@ -39,6 +44,12 @@ const uploadMarkdown = async (client, environment, collection) => {
 const downloadMarkdown = async (client, environment, collection) => {
   return new Promise(async (resolve) => {
     await deleteLocalMarkdown();
+    const filenames = await FETCH_MARKDOWN_NAMES(client, environment);
+
+    for (filename of filenames) {
+      await DOWNLOAD(client, filename, environment);
+    }
+
     resolve();
   });
 };
