@@ -1,15 +1,50 @@
+const fs = require("fs");
+const { UPLOAD, CLEAR_GRIDFS_BUCKET } = require("./API");
+
 const getNamesFromMarkdownFolder = () => {
   return fs.readdirSync("./markdown");
+};
+
+const deleteLocalMarkdown = async () => {
+  const markdown = getNamesFromMarkdownFolder();
+
+  for (let file of markdown) {
+    const path = `./markdown/${file}`;
+
+    await fs.unlink(path, () => {
+      console.log(`Deleted file ${file}`);
+    });
+  }
 };
 
 const uploadMarkdown = async (client, environment, collection) => {
   return new Promise(async (resolve) => {
     const markdown = getNamesFromMarkdownFolder();
 
-    for (let i = 0; i <= markdown.length - 1; i++) {
-      const path = `./markdown/${markdown[i]}`;
-      await UPLOAD(path, markdown[i], client, environment, collection);
+    if (markdown.length > 0) {
+      await CLEAR_GRIDFS_BUCKET(client, environment, "articles-markdown");
+
+      for (let i = 0; i <= markdown.length - 1; i++) {
+        const path = `./markdown/${markdown[i]}`;
+        await UPLOAD(path, markdown[i], client, environment, collection);
+      }
+      resolve(true);
+    } else {
+      console.log("Local markdown folder is empty. Nothing to upload.");
+      process.exit(0);
     }
-    resolve(true);
   });
+};
+
+const downloadMarkdown = async (client, environment, collection) => {
+  return new Promise(async (resolve) => {
+    await deleteLocalMarkdown();
+    resolve();
+  });
+};
+
+module.exports = {
+  getNamesFromMarkdownFolder,
+  uploadMarkdown,
+  downloadMarkdown,
 };
