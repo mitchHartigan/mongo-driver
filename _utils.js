@@ -16,10 +16,9 @@ const deleteLocalMarkdown = async () => {
   for (let file of markdown) {
     const path = `./markdown/${file}`;
 
-    await fs.unlink(path, () => {
-      console.log(`Deleted file ${file}`);
-    });
+    await fs.unlink(path, () => {});
   }
+  console.log("Finished deleting local files.");
 };
 
 const uploadMarkdown = async (client, environment, collection) => {
@@ -50,7 +49,7 @@ const downloadMarkdown = async (client, environment, collection) => {
       await DOWNLOAD(client, filename, environment);
     }
 
-    resolve();
+    resolve(true);
   });
 };
 

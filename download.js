@@ -27,13 +27,13 @@ const { downloadMarkdown } = require("./_utils");
     }
 
     if (localTarget === "markdown") {
-      const uploadComplete = await downloadMarkdown(
+      const downloadComplete = await downloadMarkdown(
         client,
         environment,
         "articles-markdown"
       );
-      if (uploadComplete) {
-        console.log(`Finished uploading markdown files to ${environment}`);
+      if (downloadComplete) {
+        console.log(`Finished downloading markdown files from ${environment}.`);
         process.exit(0);
       }
     } else {

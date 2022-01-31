@@ -1,6 +1,7 @@
 const mongodb = require("mongodb");
 const fs = require("fs");
-const command = require("nodemon/lib/config/command");
+
+// https://mongodb.github.io/node-mongodb-native/3.2/api/GridFSBucket.html
 
 const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
   const fileCollection = client
@@ -60,7 +61,6 @@ const FETCH_MARKDOWN_NAMES = (client, environment) => {
         names.push(file.filename);
       }
 
-      console.log("names \n" + names);
       resolve(names);
     });
   });
