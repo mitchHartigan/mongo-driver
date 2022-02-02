@@ -66,7 +66,32 @@ const FETCH_MARKDOWN_NAMES = (client, environment) => {
   });
 };
 
-const DOWNLOAD = async (client, filename, environment, bucketName) => {
+const FETCH_IMAGE_NAMES = (client, environment) => {
+  return new Promise((resolve, reject) => {
+    const collection = client
+      .db(`mortgagebanking-${environment}`)
+      .collection("articles-images.files");
+
+    collection.find({}).toArray((err, imgFiles) => {
+      if (err) console.log(err);
+      let names = [];
+
+      for (file of imgFiles) {
+        names.push(file.filename);
+      }
+
+      resolve(names);
+    });
+  });
+};
+
+const DOWNLOAD = async (
+  client,
+  filename,
+  environment,
+  bucketName,
+  targetFolder
+) => {
   return new Promise((resolve, reject) => {
     const db = client.db(`mortgagebanking-${environment}`);
 
@@ -77,7 +102,7 @@ const DOWNLOAD = async (client, filename, environment, bucketName) => {
 
     bucket
       .openDownloadStreamByName(filename)
-      .pipe(fs.createWriteStream(`./markdown/${filename}`))
+      .pipe(fs.createWriteStream(`./${targetFolder}/${filename}`))
       .on("error", (err) => console.log(err))
       .on("finish", () => {
         console.log(`Finished download for ${filename}`);
@@ -91,4 +116,5 @@ module.exports = {
   UPLOAD,
   DOWNLOAD,
   FETCH_MARKDOWN_NAMES,
+  FETCH_IMAGE_NAMES,
 };

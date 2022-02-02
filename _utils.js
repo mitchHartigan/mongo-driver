@@ -4,6 +4,7 @@ const {
   DOWNLOAD,
   CLEAR_GRIDFS_BUCKET,
   FETCH_MARKDOWN_NAMES,
+  FETCH_IMAGE_NAMES,
 } = require("./API");
 
 const getNamesFromMarkdownFolder = () => {
@@ -19,6 +20,17 @@ const deleteLocalMarkdown = async () => {
 
   for (let file of markdown) {
     const path = `./markdown/${file}`;
+
+    await fs.unlink(path, () => {});
+  }
+  console.log("Finished deleting local files.");
+};
+
+const deleteLocalImages = async () => {
+  const images = getNamesFromImageFolder();
+
+  for (let image of images) {
+    const path = `./images/${image}`;
 
     await fs.unlink(path, () => {});
   }
@@ -69,7 +81,20 @@ const downloadMarkdown = async (client, environment, bucket) => {
     const filenames = await FETCH_MARKDOWN_NAMES(client, environment);
 
     for (filename of filenames) {
-      await DOWNLOAD(client, filename, environment, bucket);
+      await DOWNLOAD(client, filename, environment, bucket, "markdown");
+    }
+
+    resolve(true);
+  });
+};
+
+const downloadImages = async (client, environment, bucket) => {
+  return new Promise(async (resolve) => {
+    await deleteLocalImages();
+    const filenames = await FETCH_IMAGE_NAMES(client, environment);
+
+    for (filename of filenames) {
+      await DOWNLOAD(client, filename, environment, bucket, "images");
     }
 
     resolve(true);
@@ -80,5 +105,6 @@ module.exports = {
   getNamesFromMarkdownFolder,
   uploadMarkdown,
   downloadMarkdown,
+  downloadImages,
   uploadImages,
 };

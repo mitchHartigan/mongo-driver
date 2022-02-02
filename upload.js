@@ -52,6 +52,7 @@ const { uploadMarkdown, uploadImages } = require("./_utils");
         `Incorrect folder target '${localTarget}'. Supported folder targets:`
       );
       console.log("> markdown");
+      console.log("> images");
       process.exit(0);
     }
   });

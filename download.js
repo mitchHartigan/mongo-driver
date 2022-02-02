@@ -5,7 +5,7 @@ const dbUrl = `mongodb+srv://admin:bjX2dGUEnrK4Zyd@cluster0.vl3pn.mongodb.net/fo
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
-const { downloadMarkdown } = require("./_utils");
+const { downloadMarkdown, downloadImages } = require("./_utils");
 
 (async () => {
   client.connect(async (err) => {
@@ -36,11 +36,24 @@ const { downloadMarkdown } = require("./_utils");
         console.log(`Finished downloading markdown files from ${environment}.`);
         process.exit(0);
       }
+    }
+
+    if (localTarget === "images") {
+      const downloadComplete = await downloadImages(
+        client,
+        environment,
+        "articles-images"
+      );
+      if (downloadComplete) {
+        console.log(`Finished downloading images files from ${environment}.`);
+        process.exit(0);
+      }
     } else {
       console.log(
         `Incorrect folder target '${localTarget}'. Supported targets:`
       );
       console.log("> markdown");
+      console.log("> images");
       process.exit(0);
     }
   });
