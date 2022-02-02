@@ -10,6 +10,10 @@ const getNamesFromMarkdownFolder = () => {
   return fs.readdirSync("./markdown");
 };
 
+const getNamesFromImageFolder = () => {
+  return fs.readdirSync("./images");
+};
+
 const deleteLocalMarkdown = async () => {
   const markdown = getNamesFromMarkdownFolder();
 
@@ -40,13 +44,32 @@ const uploadMarkdown = async (client, environment, collection) => {
   });
 };
 
-const downloadMarkdown = async (client, environment, collection) => {
+const uploadImages = async (client, environment, collection) => {
+  return new Promise(async (resolve) => {
+    const images = getNamesFromImageFolder();
+
+    if (images.length > 0) {
+      await CLEAR_GRIDFS_BUCKET(client, environment, "articles-images");
+
+      for (let i = 0; i <= images.length - 1; i++) {
+        const path = `./images/${images[i]}`;
+        await UPLOAD(path, images[i], client, environment, collection);
+      }
+      resolve(true);
+    } else {
+      console.log("Local image folder is empty. Nothing to upload.");
+      process.exit(0);
+    }
+  });
+};
+
+const downloadMarkdown = async (client, environment, bucket) => {
   return new Promise(async (resolve) => {
     await deleteLocalMarkdown();
     const filenames = await FETCH_MARKDOWN_NAMES(client, environment);
 
     for (filename of filenames) {
-      await DOWNLOAD(client, filename, environment);
+      await DOWNLOAD(client, filename, environment, bucket);
     }
 
     resolve(true);
@@ -57,4 +80,5 @@ module.exports = {
   getNamesFromMarkdownFolder,
   uploadMarkdown,
   downloadMarkdown,
+  uploadImages,
 };

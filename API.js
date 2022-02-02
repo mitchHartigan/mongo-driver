@@ -28,12 +28,12 @@ const UPLOAD = async (
   dbFileName,
   client,
   environment,
-  collection
+  bucketName
 ) => {
   return new Promise((resolve, reject) => {
     const db = client.db(`mortgagebanking-${environment}`);
 
-    var bucket = new mongodb.GridFSBucket(db, { bucketName: collection });
+    var bucket = new mongodb.GridFSBucket(db, { bucketName: bucketName });
 
     fs.createReadStream(localFileName).pipe(
       bucket
@@ -66,13 +66,13 @@ const FETCH_MARKDOWN_NAMES = (client, environment) => {
   });
 };
 
-const DOWNLOAD = async (client, filename, environment) => {
+const DOWNLOAD = async (client, filename, environment, bucketName) => {
   return new Promise((resolve, reject) => {
     const db = client.db(`mortgagebanking-${environment}`);
 
     const bucket = new mongodb.GridFSBucket(db, {
       chunkSizeBytes: 1024,
-      bucketName: "articles-markdown",
+      bucketName: bucketName,
     });
 
     bucket
