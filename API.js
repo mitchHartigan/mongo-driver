@@ -1,6 +1,8 @@
 const mongodb = require("mongodb");
 const fs = require("fs");
 
+const chalk = require("chalk");
+
 // https://mongodb.github.io/node-mongodb-native/3.2/api/GridFSBucket.html
 
 const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
@@ -10,7 +12,6 @@ const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
 
   await fileCollection.deleteMany({}, (err, result) => {
     if (err) console.log(err);
-    console.log("clearGridFSBucket.files ", result);
   });
 
   const chunkCollection = client
@@ -19,7 +20,6 @@ const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
 
   await chunkCollection.deleteMany({}, (err, result) => {
     if (err) console.log(err);
-    console.log("clearGridFSBucket.chunks", result);
   });
 };
 
@@ -40,7 +40,7 @@ const UPLOAD = async (
         .openUploadStream(dbFileName)
         .on("error", (err) => console.log("err?", err))
         .on("finish", () => {
-          console.log(`Finished upload for ${localFileName}`);
+          console.log(chalk.green(`  + ${localFileName}`));
           resolve();
         })
     );
@@ -105,7 +105,7 @@ const DOWNLOAD = async (
       .pipe(fs.createWriteStream(`./${targetFolder}/${filename}`))
       .on("error", (err) => console.log(err))
       .on("finish", () => {
-        console.log(`Finished download for ${filename}`);
+        console.log(chalk.green(` + ${filename}`));
         resolve();
       });
   });

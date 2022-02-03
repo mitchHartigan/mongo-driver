@@ -6,6 +6,7 @@ const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
 const { uploadMarkdown, uploadImages } = require("./_utils");
+const chalk = require("chalk");
 
 (async () => {
   client.connect(async (err) => {
@@ -19,10 +20,12 @@ const { uploadMarkdown, uploadImages } = require("./_utils");
 
     if (environment !== "staging" && environment !== "production") {
       console.log(
-        `Incorrect environment target '${environment}'. Supported environment targets:`
+        `Incorrect environment target '${chalk.red(
+          environment
+        )}'. Supported environment targets:\n`
       );
-      console.log("> staging");
-      console.log("> production");
+      console.log(">", chalk.blueBright("staging"));
+      console.log(">", chalk.blueBright("production\n"));
       process.exit(0);
     }
 
@@ -33,7 +36,11 @@ const { uploadMarkdown, uploadImages } = require("./_utils");
         "articles-markdown"
       );
       if (uploadComplete) {
-        console.log(`Finished uploading markdown files to ${environment}`);
+        console.log(
+          `\nFinished uploading ${chalk.green(
+            "markdown"
+          )} files to ${chalk.blueBright(environment)} environment.`
+        );
         process.exit(0);
       }
     }
@@ -44,15 +51,21 @@ const { uploadMarkdown, uploadImages } = require("./_utils");
         "articles-images"
       );
       if (uploadComplete) {
-        console.log(`Finished uploading image files to ${environment}`);
+        console.log(
+          `\nFinished uploading ${chalk.green(
+            "image"
+          )} files to ${chalk.blueBright(environment)} environment.`
+        );
         process.exit(0);
       }
     } else {
       console.log(
-        `Incorrect folder target '${localTarget}'. Supported folder targets:`
+        `Incorrect local folder target '${chalk.red(
+          localTarget
+        )}'. Supported local folder targets:\n`
       );
-      console.log("> markdown");
-      console.log("> images");
+      console.log(">", chalk.green("markdown"));
+      console.log(">", chalk.green("images\n"));
       process.exit(0);
     }
   });

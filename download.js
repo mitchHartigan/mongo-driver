@@ -6,11 +6,12 @@ const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
 const { downloadMarkdown, downloadImages } = require("./_utils");
+const chalk = require("chalk");
 
 (async () => {
   client.connect(async (err) => {
     if (err) {
-      console.log("Error connecting to database. Please try again.");
+      console.log(chalk.red("Error connecting to database. Please try again."));
       console.log(err);
     }
 
@@ -19,10 +20,12 @@ const { downloadMarkdown, downloadImages } = require("./_utils");
 
     if (environment !== "staging" && environment !== "production") {
       console.log(
-        `Incorrect environment target '${environment}'. Supported targets:`
+        `Incorrect environment target '${chalk.red(
+          environment
+        )}'. Supported targets:\n`
       );
-      console.log("> staging");
-      console.log("> production");
+      console.log(">", chalk.blueBright("staging"));
+      console.log(">", chalk.blueBright("production\n"));
       process.exit(0);
     }
 
@@ -33,7 +36,11 @@ const { downloadMarkdown, downloadImages } = require("./_utils");
         "articles-markdown"
       );
       if (downloadComplete) {
-        console.log(`Finished downloading markdown files from ${environment}.`);
+        console.log(
+          `\nFinished downloading ${chalk.green(
+            "markdown"
+          )} files from ${chalk.blueBright(environment)} environment.`
+        );
         process.exit(0);
       }
     }
@@ -45,15 +52,21 @@ const { downloadMarkdown, downloadImages } = require("./_utils");
         "articles-images"
       );
       if (downloadComplete) {
-        console.log(`Finished downloading images files from ${environment}.`);
+        console.log(
+          `\nFinished downloading ${chalk.green(
+            "images"
+          )} files from ${chalk.blueBright(environment)} environment.`
+        );
         process.exit(0);
       }
     } else {
       console.log(
-        `Incorrect folder target '${localTarget}'. Supported targets:`
+        `Incorrect folder target '${chalk.red(
+          localTarget
+        )}'. Supported targets:\n`
       );
-      console.log("> markdown");
-      console.log("> images");
+      console.log(">", chalk.green("markdown"));
+      console.log(">", chalk.green("images\n"));
       process.exit(0);
     }
   });

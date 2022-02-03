@@ -6,6 +6,7 @@ const {
   FETCH_MARKDOWN_NAMES,
   FETCH_IMAGE_NAMES,
 } = require("./API");
+const chalk = require("chalk");
 
 const getNamesFromMarkdownFolder = () => {
   return fs.readdirSync("./markdown");
@@ -23,7 +24,6 @@ const deleteLocalMarkdown = async () => {
 
     await fs.unlink(path, () => {});
   }
-  console.log("Finished deleting local files.");
 };
 
 const deleteLocalImages = async () => {
@@ -34,7 +34,6 @@ const deleteLocalImages = async () => {
 
     await fs.unlink(path, () => {});
   }
-  console.log("Finished deleting local files.");
 };
 
 const uploadMarkdown = async (client, environment, collection) => {
@@ -44,13 +43,22 @@ const uploadMarkdown = async (client, environment, collection) => {
     if (markdown.length > 0) {
       await CLEAR_GRIDFS_BUCKET(client, environment, "articles-markdown");
 
+      console.log(
+        `\nUploading ${chalk.green(
+          "markdown"
+        )} to environment ${chalk.blueBright(environment)}.`
+      );
+      console.log("---------------------------------------------");
+
       for (let i = 0; i <= markdown.length - 1; i++) {
         const path = `./markdown/${markdown[i]}`;
         await UPLOAD(path, markdown[i], client, environment, collection);
       }
       resolve(true);
     } else {
-      console.log("Local markdown folder is empty. Nothing to upload.");
+      console.log(
+        chalk.yellow("Local markdown folder is empty. Nothing to upload.")
+      );
       process.exit(0);
     }
   });
@@ -63,13 +71,22 @@ const uploadImages = async (client, environment, collection) => {
     if (images.length > 0) {
       await CLEAR_GRIDFS_BUCKET(client, environment, "articles-images");
 
+      console.log(
+        `\nUploading ${chalk.green("images")} to environment ${chalk.blueBright(
+          environment
+        )}.`
+      );
+      console.log("---------------------------------------------");
+
       for (let i = 0; i <= images.length - 1; i++) {
         const path = `./images/${images[i]}`;
         await UPLOAD(path, images[i], client, environment, collection);
       }
       resolve(true);
     } else {
-      console.log("Local image folder is empty. Nothing to upload.");
+      console.log(
+        chalk.yellow("Local image folder is empty. Nothing to upload.")
+      );
       process.exit(0);
     }
   });
@@ -80,6 +97,12 @@ const downloadMarkdown = async (client, environment, bucket) => {
     await deleteLocalMarkdown();
     const filenames = await FETCH_MARKDOWN_NAMES(client, environment);
 
+    console.log(
+      `\nDownloading ${chalk.green("markdown")} files from ${chalk.blueBright(
+        environment
+      )} environment:`
+    );
+    console.log("----------------------------------------");
     for (filename of filenames) {
       await DOWNLOAD(client, filename, environment, bucket, "markdown");
     }
@@ -93,6 +116,12 @@ const downloadImages = async (client, environment, bucket) => {
     await deleteLocalImages();
     const filenames = await FETCH_IMAGE_NAMES(client, environment);
 
+    console.log(
+      `\nDownloading ${chalk.green("images")} files from ${chalk.blueBright(
+        environment
+      )} environment:`
+    );
+    console.log("----------------------------------------");
     for (filename of filenames) {
       await DOWNLOAD(client, filename, environment, bucket, "images");
     }
