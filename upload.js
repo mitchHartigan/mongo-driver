@@ -6,28 +6,17 @@ const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
 const { uploadMarkdown, uploadImages } = require("./_utils");
-const chalk = require("chalk");
+const { log } = require("./_log");
 
 (async () => {
   client.connect(async (err) => {
-    if (err) {
-      console.log("Error connecting to database. Please try again.");
-      console.log(err);
-    }
+    if (err) log.dbConnectErr();
 
     const localTarget = process.argv[2];
     const environment = process.argv[3];
 
-    if (environment !== "staging" && environment !== "production") {
-      console.log(
-        `Incorrect environment target '${chalk.red(
-          environment
-        )}'. Supported environment targets:\n`
-      );
-      console.log(">", chalk.blueBright("staging"));
-      console.log(">", chalk.blueBright("production\n"));
-      process.exit(0);
-    }
+    if (environment !== "staging" && environment !== "production")
+      log.envErr(env);
 
     if (localTarget === "markdown") {
       const uploadComplete = await uploadMarkdown(
@@ -35,14 +24,7 @@ const chalk = require("chalk");
         environment,
         "articles-markdown"
       );
-      if (uploadComplete) {
-        console.log(
-          `\nFinished uploading ${chalk.green(
-            "markdown"
-          )} files to ${chalk.blueBright(environment)} environment.`
-        );
-        process.exit(0);
-      }
+      if (uploadComplete) log.uploadComplete(environment, "markdown");
     }
     if (localTarget === "images") {
       const uploadComplete = await uploadImages(
@@ -50,23 +32,7 @@ const chalk = require("chalk");
         environment,
         "articles-images"
       );
-      if (uploadComplete) {
-        console.log(
-          `\nFinished uploading ${chalk.green(
-            "image"
-          )} files to ${chalk.blueBright(environment)} environment.`
-        );
-        process.exit(0);
-      }
-    } else {
-      console.log(
-        `Incorrect local folder target '${chalk.red(
-          localTarget
-        )}'. Supported local folder targets:\n`
-      );
-      console.log(">", chalk.green("markdown"));
-      console.log(">", chalk.green("images\n"));
-      process.exit(0);
-    }
+      if (uploadComplete) log.uploadComplete(environment, "images");
+    } else log.localErr(localTarget);
   });
 })();

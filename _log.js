@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 
-const handler = {
+const log = {
   envErr: (environment) => {
     console.log(
       `\nIncorrect environment target '${chalk.redBright(
@@ -34,6 +34,14 @@ const handler = {
     );
     process.exit(0);
   },
+  uploadComplete: (environment, type) => {
+    console.log(
+      `\nFinished uploading ${chalk.green(type)} files to ${chalk.blueBright(
+        environment
+      )} environment.`
+    );
+    process.exit(0);
+  },
 };
 
-module.exports = { handler };
+module.exports = { log };

@@ -6,17 +6,17 @@ const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
 const { downloadMarkdown, downloadImages } = require("./_utils");
-const { handler } = require("./_handler");
+const { log } = require("./_log");
 
 (async () => {
   client.connect(async (err) => {
-    if (err) handler.dbConnectErr();
+    if (err) log.dbConnectErr();
 
     const localTarget = process.argv[2];
     const environment = process.argv[3];
 
     if (environment !== "staging" && environment !== "production")
-      handler.envErr(environment);
+      log.envErr(environment);
 
     if (localTarget === "markdown") {
       const downloadComplete = await downloadMarkdown(
@@ -24,16 +24,15 @@ const { handler } = require("./_handler");
         environment,
         "articles-markdown"
       );
-      if (downloadComplete) handler.downloadComplete(environment, "markdown");
+      if (downloadComplete) log.downloadComplete(environment, "markdown");
     }
-
     if (localTarget === "images") {
       const downloadComplete = await downloadImages(
         client,
         environment,
         "articles-images"
       );
-      if (downloadComplete) handler.downloadComplete(environment, "images");
-    } else handler.localErr(localTarget);
+      if (downloadComplete) log.downloadComplete(environment, "images");
+    } else log.localErr(localTarget);
   });
 })();
