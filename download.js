@@ -6,28 +6,17 @@ const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
 const { downloadMarkdown, downloadImages } = require("./_utils");
-const chalk = require("chalk");
+const { handler } = require("./_handler");
 
 (async () => {
   client.connect(async (err) => {
-    if (err) {
-      console.log(chalk.red("Error connecting to database. Please try again."));
-      console.log(err);
-    }
+    if (err) handler.dbConnectErr();
 
     const localTarget = process.argv[2];
     const environment = process.argv[3];
 
-    if (environment !== "staging" && environment !== "production") {
-      console.log(
-        `Incorrect environment target '${chalk.red(
-          environment
-        )}'. Supported targets:\n`
-      );
-      console.log(">", chalk.blueBright("staging"));
-      console.log(">", chalk.blueBright("production\n"));
-      process.exit(0);
-    }
+    if (environment !== "staging" && environment !== "production")
+      handler.envErr(environment);
 
     if (localTarget === "markdown") {
       const downloadComplete = await downloadMarkdown(
@@ -35,14 +24,7 @@ const chalk = require("chalk");
         environment,
         "articles-markdown"
       );
-      if (downloadComplete) {
-        console.log(
-          `\nFinished downloading ${chalk.green(
-            "markdown"
-          )} files from ${chalk.blueBright(environment)} environment.`
-        );
-        process.exit(0);
-      }
+      if (downloadComplete) handler.downloadComplete(environment, "markdown");
     }
 
     if (localTarget === "images") {
@@ -51,23 +33,7 @@ const chalk = require("chalk");
         environment,
         "articles-images"
       );
-      if (downloadComplete) {
-        console.log(
-          `\nFinished downloading ${chalk.green(
-            "images"
-          )} files from ${chalk.blueBright(environment)} environment.`
-        );
-        process.exit(0);
-      }
-    } else {
-      console.log(
-        `Incorrect folder target '${chalk.red(
-          localTarget
-        )}'. Supported targets:\n`
-      );
-      console.log(">", chalk.green("markdown"));
-      console.log(">", chalk.green("images\n"));
-      process.exit(0);
-    }
+      if (downloadComplete) handler.downloadComplete(environment, "images");
+    } else handler.localErr(localTarget);
   });
 })();
