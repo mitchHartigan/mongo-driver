@@ -3,127 +3,71 @@ const {
   UPLOAD,
   DOWNLOAD,
   CLEAR_GRIDFS_BUCKET,
-  FETCH_MARKDOWN_NAMES,
-  FETCH_IMAGE_NAMES,
+  FETCH_FILE_NAMES,
 } = require("./API");
 const chalk = require("chalk");
 
-const getNamesFromMarkdownFolder = () => {
-  return fs.readdirSync("./markdown");
+const getNamesFromLocalFolder = (target) => {
+  return fs.readdirSync(target);
 };
 
-const getNamesFromImageFolder = () => {
-  return fs.readdirSync("./images");
-};
+const deleteLocalFiles = async (target) => {
+  const files = getNamesFromLocalFolder(target);
 
-const deleteLocalMarkdown = async () => {
-  const markdown = getNamesFromMarkdownFolder();
-
-  for (let file of markdown) {
-    const path = `./markdown/${file}`;
-
-    await fs.unlink(path, () => {});
+  for (let file of files) {
+    await fs.unlink(`${target}/${file}`, () => {});
   }
 };
 
-const deleteLocalImages = async () => {
-  const images = getNamesFromImageFolder();
+/* 
+client = MongodbClient instance.
+target = Either 'markdown' or 'images'.
+environment = 'Staging' or 'production'.
+collection = 'articles-markdown', 'articles-images' etc.
+*/
 
-  for (let image of images) {
-    const path = `./images/${image}`;
-
-    await fs.unlink(path, () => {});
-  }
-};
-
-const uploadMarkdown = async (client, environment, collection) => {
+const upload = async (client, target, environment, collection) => {
   return new Promise(async (resolve) => {
-    const markdown = getNamesFromMarkdownFolder();
+    const folderPath = `./${target}`;
+    const files = getNamesFromLocalFolder(target);
 
-    if (markdown.length > 0) {
-      await CLEAR_GRIDFS_BUCKET(client, environment, "articles-markdown");
-
-      console.log(
-        `\nUploading ${chalk.green(
-          "markdown"
-        )} to environment ${chalk.blueBright(environment)}.`
-      );
-      console.log("---------------------------------------------");
-
-      for (let i = 0; i <= markdown.length - 1; i++) {
-        const path = `./markdown/${markdown[i]}`;
-        await UPLOAD(path, markdown[i], client, environment, collection);
-      }
-      resolve(true);
-    } else {
-      console.log(
-        chalk.yellow("Local markdown folder is empty. Nothing to upload.")
-      );
-      process.exit(0);
-    }
-  });
-};
-
-const uploadImages = async (client, environment, collection) => {
-  return new Promise(async (resolve) => {
-    const images = getNamesFromImageFolder();
-
-    if (images.length > 0) {
-      await CLEAR_GRIDFS_BUCKET(client, environment, "articles-images");
+    if (files.length > 0) {
+      await CLEAR_GRIDFS_BUCKET(client, environment, collection);
 
       console.log(
-        `\nUploading ${chalk.green("images")} to environment ${chalk.blueBright(
+        `\nUploading ${chalk.green(target)} to environment ${chalk.blueBright(
           environment
         )}.`
       );
       console.log("---------------------------------------------");
 
-      for (let i = 0; i <= images.length - 1; i++) {
-        const path = `./images/${images[i]}`;
-        await UPLOAD(path, images[i], client, environment, collection);
+      for (let i = 0; i <= files.length - 1; i++) {
+        const path = `${folderPath}/${files[i]}`;
+        await UPLOAD(path, files[i], client, environment, collection);
       }
       resolve(true);
     } else {
       console.log(
-        chalk.yellow("Local image folder is empty. Nothing to upload.")
+        chalk.yellow(`Local ${target} folder is empty. Nothing to upload.`)
       );
       process.exit(0);
     }
   });
 };
 
-const downloadMarkdown = async (client, environment, bucket) => {
+const download = async (client, target, environment, bucket) => {
   return new Promise(async (resolve) => {
-    await deleteLocalMarkdown();
-    const filenames = await FETCH_MARKDOWN_NAMES(client, environment);
+    await deleteLocalFiles(target);
+    const filenames = await FETCH_FILE_NAMES(client, target, environment);
 
     console.log(
-      `\nDownloading ${chalk.green("markdown")} files from ${chalk.blueBright(
+      `\nDownloading ${chalk.green(target)} files from ${chalk.blueBright(
         environment
       )} environment:`
     );
     console.log("----------------------------------------");
     for (filename of filenames) {
-      await DOWNLOAD(client, filename, environment, bucket, "markdown");
-    }
-
-    resolve(true);
-  });
-};
-
-const downloadImages = async (client, environment, bucket) => {
-  return new Promise(async (resolve) => {
-    await deleteLocalImages();
-    const filenames = await FETCH_IMAGE_NAMES(client, environment);
-
-    console.log(
-      `\nDownloading ${chalk.green("images")} files from ${chalk.blueBright(
-        environment
-      )} environment:`
-    );
-    console.log("----------------------------------------");
-    for (filename of filenames) {
-      await DOWNLOAD(client, filename, environment, bucket, "images");
+      await DOWNLOAD(client, filename, environment, bucket, target);
     }
 
     resolve(true);
@@ -131,9 +75,6 @@ const downloadImages = async (client, environment, bucket) => {
 };
 
 module.exports = {
-  getNamesFromMarkdownFolder,
-  uploadMarkdown,
-  downloadMarkdown,
-  downloadImages,
-  uploadImages,
+  upload,
+  download,
 };

@@ -5,7 +5,7 @@ const dbUrl = `mongodb+srv://admin:bjX2dGUEnrK4Zyd@cluster0.vl3pn.mongodb.net/fo
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
-const { uploadMarkdown, uploadImages } = require("./_utils");
+const { upload } = require("./_utils");
 const { log } = require("./_log");
 
 (async () => {
@@ -19,16 +19,18 @@ const { log } = require("./_log");
       log.envErr(env);
 
     if (localTarget === "markdown") {
-      const uploadComplete = await uploadMarkdown(
+      const uploadComplete = await upload(
         client,
+        "markdown",
         environment,
         "articles-markdown"
       );
       if (uploadComplete) log.uploadComplete(environment, "markdown");
     }
     if (localTarget === "images") {
-      const uploadComplete = await uploadImages(
+      const uploadComplete = await upload(
         client,
+        "images",
         environment,
         "articles-images"
       );

@@ -23,6 +23,25 @@ const CLEAR_GRIDFS_BUCKET = async (client, environment, collection) => {
   });
 };
 
+FETCH_FILE_NAMES = (client, target, environment) => {
+  return new Promise((resolve, reject) => {
+    const collection = client
+      .db(`mortgagebanking-${environment}`)
+      .collection(`articles-${target}.files`);
+
+    collection.find({}).toArray((err, files) => {
+      if (err) console.log(err);
+      let names = [];
+
+      for (file of files) {
+        names.push(file.filename);
+      }
+
+      resolve(names);
+    });
+  });
+};
+
 const UPLOAD = async (
   localFileName,
   dbFileName,
@@ -44,44 +63,6 @@ const UPLOAD = async (
           resolve();
         })
     );
-  });
-};
-
-const FETCH_MARKDOWN_NAMES = (client, environment) => {
-  return new Promise((resolve, reject) => {
-    const collection = client
-      .db(`mortgagebanking-${environment}`)
-      .collection("articles-markdown.files");
-
-    collection.find({}).toArray((err, markdownFiles) => {
-      if (err) console.log(err);
-      let names = [];
-
-      for (file of markdownFiles) {
-        names.push(file.filename);
-      }
-
-      resolve(names);
-    });
-  });
-};
-
-const FETCH_IMAGE_NAMES = (client, environment) => {
-  return new Promise((resolve, reject) => {
-    const collection = client
-      .db(`mortgagebanking-${environment}`)
-      .collection("articles-images.files");
-
-    collection.find({}).toArray((err, imgFiles) => {
-      if (err) console.log(err);
-      let names = [];
-
-      for (file of imgFiles) {
-        names.push(file.filename);
-      }
-
-      resolve(names);
-    });
   });
 };
 
@@ -115,6 +96,5 @@ module.exports = {
   CLEAR_GRIDFS_BUCKET,
   UPLOAD,
   DOWNLOAD,
-  FETCH_MARKDOWN_NAMES,
-  FETCH_IMAGE_NAMES,
+  FETCH_FILE_NAMES,
 };

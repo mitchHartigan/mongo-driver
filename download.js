@@ -5,7 +5,7 @@ const dbUrl = `mongodb+srv://admin:bjX2dGUEnrK4Zyd@cluster0.vl3pn.mongodb.net/fo
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
 
-const { downloadMarkdown, downloadImages } = require("./_utils");
+const { downloadMarkdown, downloadImages, download } = require("./_utils");
 const { log } = require("./_log");
 
 (async () => {
@@ -19,16 +19,18 @@ const { log } = require("./_log");
       log.envErr(environment);
 
     if (localTarget === "markdown") {
-      const downloadComplete = await downloadMarkdown(
+      const downloadComplete = await download(
         client,
+        localTarget,
         environment,
         "articles-markdown"
       );
       if (downloadComplete) log.downloadComplete(environment, "markdown");
     }
     if (localTarget === "images") {
-      const downloadComplete = await downloadImages(
+      const downloadComplete = await download(
         client,
+        localTarget,
         environment,
         "articles-images"
       );
