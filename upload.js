@@ -1,6 +1,6 @@
 "use strict";
 
-const dbUrl = `mongodb+srv://admin:bjX2dGUEnrK4Zyd@cluster0.vl3pn.mongodb.net/food?retryWrites=true&w=majority`;
+const dbUrl = "";
 
 const { MongoClient } = require("mongodb");
 const client = new MongoClient(dbUrl);
